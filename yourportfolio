@@ -70,6 +70,26 @@
       font-weight: 600;
     }
 
+    /* Skills tags glow to match the neon space aesthetic */
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      max-width: 480px;
+    }
+
+    .skill-tag {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(124, 58, 237, 0.18);
+      border: 1px solid rgba(96, 165, 250, 0.8);
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.7), 0 0 20px rgba(168, 85, 247, 0.5);
+      color: #e0f2fe;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
     .hint {
       position: fixed;
       bottom: 16px;
@@ -93,6 +113,19 @@
     <div class="card">
       <h2>About Me</h2>
       <p>I love turning ideas into interactive experiences using HTML, CSS, JavaScript and 3D graphics.</p>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="card">
+      <h2>Skills</h2>
+      <div class="skills-list">
+        <span class="skill-tag">C</span>
+        <span class="skill-tag">HTML</span>
+        <span class="skill-tag">CSS</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">Three.js</span>
+      </div>
     </div>
   </section>
 
@@ -129,13 +162,31 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Main object: a shiny torus knot
-    const knot = new THREE.Mesh(
-      new THREE.TorusKnotGeometry(8, 2.5, 160, 24),
-      new THREE.MeshStandardMaterial({ color: 0x7c3aed, metalness: 0.5, roughness: 0.25 })
+    // Replace the purple torus knot with a glowing wireframe sphere that pulses for a gentler neon effect.
+    const glowSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(7.5, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0xa78bfa,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.95
+      })
     );
-    knot.position.x = 12;
-    scene.add(knot);
+    glowSphere.position.x = 12;
+    scene.add(glowSphere);
+
+    // Add a soft outer glow so the sphere feels more illuminated and futuristic.
+    const glowHalo = new THREE.Mesh(
+      new THREE.SphereGeometry(9, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0x60a5fa,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.12
+      })
+    );
+    glowHalo.position.x = 12;
+    scene.add(glowHalo);
 
     // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.4);
@@ -161,7 +212,7 @@
 
     // Floating cubes made with a loop
     const cubes = [];
-    const cubeColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399];
+    const cubeColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399, 0x60a5fa, 0xf9a8d4];
     for (let i = 0; i < 12; i++) {
       const cube = new THREE.Mesh(
         new THREE.BoxGeometry(1.5, 1.5, 1.5),
@@ -176,7 +227,7 @@
       cubes.push(cube);
     }
 
-    // Mouse movement tilts the knot
+    // Mouse movement tilts the main object
     const mouse = { x: 0, y: 0 };
     window.addEventListener("mousemove", (event) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -189,13 +240,28 @@
       scrollY = window.scrollY;
     });
 
+    // Clicking anywhere cycles the cube palette so the floating objects respond to user interaction.
+    let colorIndex = 0;
+    const clickColors = [0x22d3ee, 0xf472b6, 0xfacc15, 0x34d399, 0x60a5fa, 0xc084fc];
+    window.addEventListener("click", () => {
+      colorIndex = (colorIndex + 1) % clickColors.length;
+      cubes.forEach((cube, idx) => {
+        cube.material.color.setHex(clickColors[(colorIndex + idx) % clickColors.length]);
+      });
+    });
+
     // Animation loop
     const clock = new THREE.Clock();
     function animate() {
       const time = clock.getElapsedTime();
 
-      knot.rotation.x = time * 0.3 + mouse.y * 0.5;
-      knot.rotation.y = time * 0.4 + mouse.x * 0.5;
+      const pulse = 1 + Math.sin(time * 1.8) * 0.18;
+      glowSphere.scale.setScalar(pulse);
+      glowHalo.scale.setScalar(1 + Math.sin(time * 1.6) * 0.2);
+      glowSphere.rotation.x = time * 0.3 + mouse.y * 0.5;
+      glowSphere.rotation.y = time * 0.4 + mouse.x * 0.5;
+      glowHalo.rotation.x = -time * 0.25;
+      glowHalo.rotation.y = time * 0.35;
 
       cubes.forEach((cube, i) => {
         cube.rotation.x += 0.01;
