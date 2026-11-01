@@ -116,6 +116,7 @@
     </div>
   </section>
 
+  <!-- Skills section: glowing tags for the main technologies used in the portfolio -->
   <section id="skills">
     <div class="card">
       <h2>Skills</h2>
@@ -162,7 +163,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Replace the purple torus knot with a glowing wireframe sphere that pulses for a gentler neon effect.
+    // Replace the purple torus knot with a glowing wireframe sphere that slowly pulses bigger and smaller.
     const glowSphere = new THREE.Mesh(
       new THREE.SphereGeometry(7.5, 32, 32),
       new THREE.MeshBasicMaterial({
